@@ -1,89 +1,89 @@
 
-import { stripFunctions } from '../index';
+import { Replacer } from '../index';
 
 
 
-describe('inlineTemplate', () => {
-  it("should remove one line function", () => {
-    const ONELINE = `
-    function() {
-      for(;;) {
-        assert("';'", 1223, console.log("a"));
-      }
-      let a = 12;
-      console.log(12 + console.log(), 12, ";", '";');
-      console.debug("hola");
-      cconsole.log();
-      if(true) assert();
-      aassert();
-    }
-  `;
+describe('replacer', () => {
+  it('should remove', () => {
+    const input = `
+assert  ();
+{assert(";",
+	'";',
+	        \`;\`,
+	hola,
+	hola(assert()));
+-assert (1,2,3, hola, "hola", 'hola') ;
+!assert();
+let a = assert() + 6;
+assert(), assert(), assert()
+`;
 
-  const ONELINE_EXPECTED = `
-    function() {
-      for(;;) {
-        void 0;
-      }
-      let a = 12;
-      void 0;
-      console.debug("hola");
-      cconsole.log();
-      if(true) void 0;
-      aassert();
-    }
-  `;
-    let replacer = stripFunctions(['console.log', 'assert']);
-    let result = replacer(ONELINE);
-    expect(result).toEqual(ONELINE_EXPECTED);
+
+    const expected = `
+(void 0) /* assert */;
+{(void 0) /* assert */;
+-(void 0) /* assert */ ;
+!(void 0) /* assert */;
+let a = (void 0) /* assert */ + 6;
+(void 0) /* assert */, (void 0) /* assert */, (void 0) /* assert */
+`;
+    let replacer = new Replacer(['assert']);
+    let result = replacer.replace(input);
+    expect(result).toEqual(expected);
   });
 
-    it("should remove multi line function", () => {
-    const MULTILINE = `
-    function() {
-      for(;;) {
-        assert("';",
-            '"',
-        1223,
-        console.log("a"));
-      }
-      let a = 12;
-      console.log(
-        "hola",
-        1,
-        hola()
-          .adios(),
-        '23;', value
-        value2);
-      console.debug(12
-      ,12, ";", '";'
-        );
-      cconsole.log();
-      if(true) assert("hola",
-        hola,
-        123,
-        hola(";"));
-      aassert();
-    }
-  `;
+  it('should NOT remove', () => {
+    const input = `
+_assert();
+2assert();
+aassert();
+assert;
+assert -();
+`;
 
-  const MULTILINE_EXPECTED = `
-    function() {
-      for(;;) {
-        void 0;
-      }
-      let a = 12;
-      void 0;
-      console.debug(12
-      ,12, ";", '";'
-        );
-      cconsole.log();
-      if(true) void 0;
-      aassert();
-    }
-  `;
-    let replacer = stripFunctions(['console.log', 'assert']);
-    let result = replacer(MULTILINE);
-    expect(result).toEqual(MULTILINE_EXPECTED);
+    let replacer = new Replacer(['assert']);
+    let result = replacer.replace(input);
+    expect(result).toEqual(input);
   });
+
+  it('should handle several names', () => {
+
+    const input = `
+    if(true) {
+      console.debug('text: example;', "hola", \`
+        hi there
+        kiu4y prx87yweo flb
+        \`,
+        assert, console.debug(),
+        value1,
+        value2())
+
+      assert(true, "internal error");
+    }
+    let a = console.debug() + assert(assert()) + 3;
+    ((
+    debug()
+    _assert()
+    assert();`;
+
+    const output = `
+    if(true) {
+      (void 0) /* console.debug */
+
+      (void 0) /* assert */;
+    }
+    let a = (void 0) /* console.debug */ + (void 0) /* assert */ + 3;
+    ((
+    debug()
+    _assert()
+    (void 0) /* assert */;`;
+
+    let replacer = new Replacer(['assert', 'console.debug']);
+    let result = replacer.replace(input);
+    expect(result).toEqual(output);
+  });
+
 });
+
+
 
