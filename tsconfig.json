@@ -6,7 +6,10 @@
     "module": "commonjs",
     "outDir": "./dist",
     "target": "es5",
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "types": [
+      "jasmine"
+    ]
   },
   "include": [
     "src/**/*.ts"
