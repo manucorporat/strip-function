@@ -16,6 +16,7 @@ enum State {
 
 export class Replacer {
   private steps: Step[];
+  private replacement: string = '(void 0) ';
 
   constructor(functions: string[]) {
     this.steps = functions.map((name) => regexForName(name));
@@ -32,13 +33,14 @@ export class Replacer {
     let regex = step.regex;
     let parts: string[] = [];
     let index = 0;
+    let replacement = `${this.replacement}/* ${step.name} */`;
     while (true) {
       let result = _findNextFunc(source, regex, index);
       if (result === null) {
         break;
       }
       parts.push(source.substr(index, result.start - index));
-      parts.push(`(void 0) /* ${step.name} */`);
+      parts.push(replacement);
       index = result.end;
     }
     if (index < source.length) {
